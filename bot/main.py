@@ -1,6 +1,6 @@
 
-import logging
 import asyncio
+import logging
 
 from telegram.ext import (
     Application,
@@ -42,8 +42,11 @@ async def post_init(app: Application):
 
 def main():
     if not BOT_TOKEN:
-        raise ValueError("BOT_TOKEN environment variable is missing")
+        raise ValueError(
+            "BOT_TOKEN environment variable is missing"
+        )
 
+    # Create the application
     app = (
         Application.builder()
         .token(BOT_TOKEN)
@@ -51,7 +54,7 @@ def main():
         .build()
     )
 
-    # Commands
+    # Bot commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("newgame", newgame))
     app.add_handler(CommandHandler("1v1", one_v_one))
@@ -62,9 +65,12 @@ def main():
     app.add_handler(CommandHandler("lb", leaderboard))
     app.add_handler(CommandHandler("leaderboard", leaderboard))
 
-    # Join callback
+    # Join game callback
     app.add_handler(
-        CallbackQueryHandler(join_callback, pattern="^join_")
+        CallbackQueryHandler(
+            join_callback,
+            pattern=r"^join_",
+        )
     )
 
     # Bowler numbers in private chat
@@ -89,20 +95,19 @@ def main():
 
     logger.info("Cricket Rivalry Bot starting...")
 
-    # Start polling and manage the event loop
-    app.run_polling(
-        allowed_updates=["message", "callback_query"]
-    )
+    # Ensure an event loop exists before starting polling
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        app.run_polling(
+            allowed_updates=["message", "callback_query"]
+        )
+    finally:
+        if not loop.is_closed():
+            loop.close()
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except RuntimeError as exc:
-        if "There is no current event loop" not in str(exc):
-            raise
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        main()
-        
+    main()
+    
