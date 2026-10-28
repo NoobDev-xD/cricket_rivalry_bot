@@ -45,7 +45,7 @@ def main():
     app.add_handler(CallbackQueryHandler(join_callback, pattern="^join_"))
 
     app.add_handler(MessageHandler(
-        filters.ChatType.PRIVATE & filters.TEXT & \~filters.COMMAND,
+        filters.ChatType.GROUPS & filters.TEXT & \~filters.COMMAND,
         private_number
     ))
     app.add_handler(MessageHandler(
