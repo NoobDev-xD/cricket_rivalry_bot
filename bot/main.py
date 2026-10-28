@@ -44,10 +44,13 @@ def main():
 
     app.add_handler(CallbackQueryHandler(join_callback, pattern="^join_"))
 
+    # Bowler numbers in private chat
     app.add_handler(MessageHandler(
-        filters.ChatType.GROUPS & filters.TEXT & \~filters.COMMAND,
+        filters.ChatType.PRIVATE & filters.TEXT & \~filters.COMMAND,
         private_number
     ))
+
+    # Batter numbers in group
     app.add_handler(MessageHandler(
         filters.ChatType.GROUPS & filters.TEXT & \~filters.COMMAND,
         group_number
