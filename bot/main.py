@@ -40,21 +40,25 @@ async def post_init(app: Application):
     logger.info("Database initialized")
 
 
-def main():
+async def post_shutdown(app: Application):
+    logger.info("Cricket Rivalry Bot stopped")
+
+
+async def run_bot():
     if not BOT_TOKEN:
         raise ValueError(
             "BOT_TOKEN environment variable is missing"
         )
 
-    # Create the application
     app = (
         Application.builder()
         .token(BOT_TOKEN)
         .post_init(post_init)
+        .post_shutdown(post_shutdown)
         .build()
     )
 
-    # Bot commands
+    # Commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("newgame", newgame))
     app.add_handler(CommandHandler("1v1", one_v_one))
@@ -65,7 +69,7 @@ def main():
     app.add_handler(CommandHandler("lb", leaderboard))
     app.add_handler(CommandHandler("leaderboard", leaderboard))
 
-    # Join game callback
+    # Join callback
     app.add_handler(
         CallbackQueryHandler(
             join_callback,
@@ -95,19 +99,26 @@ def main():
 
     logger.info("Cricket Rivalry Bot starting...")
 
-    # Ensure an event loop exists before starting polling
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    # Manage the complete application lifecycle
+    async with app:
+        await app.start()
 
-    try:
-        app.run_polling(
+        if app.updater is None:
+            raise RuntimeError("Application updater is unavailable")
+
+        await app.updater.start_polling(
             allowed_updates=["message", "callback_query"]
         )
-    finally:
-        if not loop.is_closed():
-            loop.close()
+
+        try:
+            await asyncio.Event().wait()
+        finally:
+            await app.updater.stop()
+            await app.stop()
 
 
 if __name__ == "__main__":
-    main()
-    
+    try:
+        asyncio.run(run_bot())
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
