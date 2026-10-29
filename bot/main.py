@@ -115,7 +115,7 @@ async def run_bot():
         await app.shutdown()
 
 
-if if __name__ == "__main__":
+if __name__ == "__main__":
     try:
         asyncio.set_event_loop_policy(
             asyncio.DefaultEventLoopPolicy()
