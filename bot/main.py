@@ -1,4 +1,3 @@
-
 import asyncio
 import logging
 
@@ -116,8 +115,11 @@ async def run_bot():
         await app.shutdown()
 
 
-if __name__ == "__main__":
+if if __name__ == "__main__":
     try:
+        asyncio.set_event_loop_policy(
+            asyncio.DefaultEventLoopPolicy()
+        )
         asyncio.run(run_bot())
     except KeyboardInterrupt:
         logger.info("Cricket Rivalry Bot stopped")
